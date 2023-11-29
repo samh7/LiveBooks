@@ -1,0 +1,47 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @map %{
+    "2" => ["a", "b", "c"],
+    "3" => ["d", "e", "f"],
+    "4" => ["g", "h", "i"],
+    "5" => ["j", "k", "l"],
+    "6" => ["m", "n", "o"],
+    "7" => ["p", "q", "r", "s"],
+    "8" => ["t", "u", "v"],
+    "9" => ["w", "x", "y", "z"]
+  }
+  @spec letter_combinations(digits :: String.t()) :: [String.t()]
+  def letter_combinations(digits) do
+    digits
+    |> to_letters_list
+    |> combine_all([])
+    |> Enum.map(&Enum.reverse(&1))
+    |> Enum.reverse()
+    |> List.flatten()
+  end
+
+  def to_letters_list(digits), do: digits |> String.split("", trim: true) |> Enum.map(&@map[&1])
+
+  def combine([l, l1, []], str_list), do: combine([l, l1], str_list)
+  def combine([l, [], l1], str_list), do: combine([l, l1], str_list)
+
+  def combine([[x | _] = list, [y | list2], [z | list3]], string_list),
+    do: combine([list, list2, list3], [x <> y <> z | string_list])
+
+  def combine_all([[], _], str_list), do: str_list
+
+  def combine_all([[_ | l1] = l, l2], str_list),
+    do: combine_all([l1, l2], [combine([l, l2], []) | str_list])
+
+  def combine([_, []], str_list), do: str_list
+
+  def combine([[x | _] = list, [y | list2]], string_list),
+    do: combine([list, list2], [x <> y | string_list])
+end
+
+Solution.letter_combinations("34")
+```
