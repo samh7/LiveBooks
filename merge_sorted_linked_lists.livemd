@@ -1,0 +1,35 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+# Definition for singly-linked list.
+#
+defmodule ListNode do
+  @type t :: %__MODULE__{
+          val: integer,
+          next: ListNode.t() | nil
+        }
+  defstruct val: 0, next: nil
+end
+```
+
+```elixir
+defmodule Solution do
+  @spec merge_two_lists(list1 :: ListNode.t() | nil, list2 :: ListNode.t() | nil) ::
+          ListNode.t() | nil
+  def merge_two_lists(list1, list2),
+    do: (to_native_list(list1) ++ to_native_list(list2)) |> Enum.sort() |> to_list_node()
+
+  def to_list_node([]), do: nil
+
+  def to_list_node([h | list]), do: %ListNode{val: h, next: to_list_node(list)}
+
+  def to_native_list(nil), do: []
+
+  def to_native_list(list_node), do: [list_node.val | to_native_list(list_node.next)]
+end
+
+list = %{val: 1, next: %{val: 2, next: %{val: 3, next: %{val: 5, next: nil}}}}
+Solution.merge_two_lists(list, list)
+```
