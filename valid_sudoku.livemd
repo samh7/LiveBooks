@@ -1,0 +1,100 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @spec is_valid_sudoku(board :: [[char]]) :: boolean
+  def is_valid_sudoku(board) do
+    [list1, list2, list3, list4, list5, list6, list7, list8, list9] = board
+
+    sub_boxes =
+      get_sub_boxes(list1, list2, list3, list4, list5, list6, list7, list8, list9, [])
+
+    columns = get_columns(list1, list2, list3, list4, list5, list6, list7, list8, list9, [])
+    valid? = validate(sub_boxes, columns, board)
+
+    valid?
+  end
+
+  def get_columns([], _, _, _, _, _, _, _, _, lists), do: lists
+
+  def get_columns(
+        [h1 | list1],
+        [h2 | list2],
+        [h3 | list3],
+        [h4 | list4],
+        [h5 | list5],
+        [h6 | list6],
+        [h7 | list7],
+        [h8 | list8],
+        [h9 | list9],
+        lists
+      ) do
+    get_columns(list1, list2, list3, list4, list5, list6, list7, list8, list9, [
+      [h1, h2, h3, h4, h5, h6, h7, h8, h9] | lists
+    ])
+  end
+
+  def get_sub_boxes([], _, _, _, _, _, _, _, _, lists), do: lists
+
+  def get_sub_boxes(
+        [h11, h12, h13 | list1],
+        [h21, h22, h23 | list2],
+        [h31, h32, h33 | list3],
+        [h41, h42, h43 | list4],
+        [h51, h52, h53 | list5],
+        [h61, h62, h63 | list6],
+        [h71, h72, h73 | list7],
+        [h81, h82, h83 | list8],
+        [h91, h92, h93 | list9],
+        lists
+      ) do
+    get_sub_boxes(list1, list2, list3, list4, list5, list6, list7, list8, list9, [
+      [h11, h12, h13, h21, h22, h23, h31, h32, h33],
+      [h41, h42, h43, h51, h52, h53, h61, h62, h63],
+      [h71, h72, h73, h81, h82, h83, h91, h92, h93] | lists
+    ])
+  end
+
+  def validate([], _, _), do: true
+
+  def validate([h1 | list1], [h2 | list2], [h3 | list3]) do
+    {h1, h2, h3} =
+      {h1 |> Enum.reject(&(&1 == 46)), h2 |> Enum.reject(&(&1 == 46)),
+       h3 |> Enum.reject(&(&1 == 46))}
+
+    {h1_len, h2_len, h3_len} = {h1 |> length(), h2 |> length(), h3 |> length()}
+
+    {h1?, h2?, h3?} =
+      {h1 |> Enum.uniq() |> length() == h1_len, h2 |> Enum.uniq() |> length() == h2_len,
+       h3 |> Enum.uniq() |> length() == h3_len}
+
+    cond do
+      not h1? or not h2? or not h3? -> false
+      true -> validate(list1, list2, list3)
+    end
+  end
+end
+
+list = [
+  [~c"5", ~c"3", ~c".", ~c".", ~c"7", ~c".", ~c".", ~c".", ~c"."],
+  [~c"6", ~c".", ~c".", ~c"1", ~c"9", ~c"5", ~c".", ~c".", ~c"."],
+  [~c".", ~c"9", ~c"8", ~c".", ~c".", ~c".", ~c".", ~c"6", ~c"."],
+  [~c"8", ~c".", ~c".", ~c".", ~c"6", ~c".", ~c".", ~c".", ~c"3"],
+  [~c"4", ~c".", ~c".", ~c"8", ~c".", ~c"3", ~c".", ~c".", ~c"1"],
+  [~c"7", ~c".", ~c".", ~c".", ~c"2", ~c".", ~c".", ~c".", ~c"6"],
+  [~c".", ~c"6", ~c".", ~c".", ~c".", ~c".", ~c"2", ~c"8", ~c"."],
+  [~c".", ~c".", ~c".", ~c"4", ~c"1", ~c"9", ~c".", ~c".", ~c"5"],
+  [~c".", ~c".", ~c".", ~c".", ~c"8", ~c".", ~c".", ~c"7", ~c"9"]
+]
+
+Solution.is_valid_sudoku(list)
+[".
+
+
+
+
+
+"] == [46]
+```
