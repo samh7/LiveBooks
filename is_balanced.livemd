@@ -1,0 +1,59 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+# Definition for a binary tree node.
+
+defmodule TreeNode do
+  @type t :: %__MODULE__{
+          val: integer,
+          left: TreeNode.t() | nil,
+          right: TreeNode.t() | nil
+        }
+  defstruct val: 0, left: nil, right: nil
+end
+```
+
+```elixir
+defmodule Solution do
+  @spec is_balanced(root :: TreeNode.t() | nil) :: boolean
+  def is_balanced(root) do
+    traverse(root)
+  end
+
+  def traverse(node) when node.left == nil and node.right == nil do
+    1
+  end
+
+  def traverse(node) when node.left == nil or node.right == nil do
+    1
+  end
+
+  def traverse(node) do
+    abs(traverse(node.left) + traverse(node.right))
+  end
+
+  # def to_native_list(nil), do: []
+
+  # def to_native_list(head) do
+  #   [head.val | to_native_list(head.next)]
+  # end
+end
+
+node = %TreeNode{
+  val: 1,
+  left: %TreeNode{
+    val: 2,
+    right: %TreeNode{val: 3, left: nil, right: nil},
+    left: %TreeNode{
+      val: 3,
+      right: %TreeNode{val: 4, left: nil, right: nil},
+      left: %TreeNode{val: 4, left: nil, right: nil}
+    }
+  },
+  right: %TreeNode{left: nil, right: nil, val: 2}
+}
+
+Solution.is_balanced(node)
+```
