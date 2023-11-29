@@ -1,0 +1,26 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @spec search_range(nums :: [integer], target :: integer) :: [integer]
+  def search_range(nums, target) do
+    get_indices(nums, target, 0, [-1, -1])
+  end
+
+  def get_indices([], _, _, indices), do: indices
+
+  def get_indices([h | nums], target, count, [x, _] = indices) do
+    cond do
+      h == target ->
+        get_indices(nums, target, count + 1, [if(x == -1, do: count, else: x), count])
+
+      true ->
+        get_indices(nums, target, count + 1, indices)
+    end
+  end
+end
+
+Solution.search_range([5, 7, 7, 8, 8, 10], 5)
+```
