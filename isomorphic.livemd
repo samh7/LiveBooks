@@ -1,0 +1,32 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @spec is_isomorphic(s :: String.t(), t :: String.t()) :: boolean
+  def is_isomorphic(s, t) do
+    s = s |> to_list
+    t = t |> to_list
+    ms = s |> get_freqs
+    mt = t |> get_freqs
+    to_freq_list(s, ms) |> IO.inspect()
+    to_freq_list(t, mt) |> IO.inspect()
+    mt
+  end
+
+  def get_freqs(s),
+    do: s |> Enum.frequencies()
+
+  def to_freq_list([], _), do: []
+
+  def to_freq_list([h | str_list], map) do
+    [Map.get(map, h) | to_freq_list(str_list, map)]
+  end
+
+  def to_list(s),
+    do: s |> String.split("", trim: true)
+end
+
+Solution.is_isomorphic("bbbaaaba", "aaabbbba")
+```
