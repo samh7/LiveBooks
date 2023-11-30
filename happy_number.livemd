@@ -1,0 +1,35 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @map %{
+    9 => false,
+    8 => false,
+    7 => true,
+    6 => false,
+    5 => false,
+    4 => false,
+    3 => false,
+    2 => false,
+    1 => true
+  }
+  @spec is_happy(n :: integer) :: boolean
+  def is_happy(n) when n < 9, do: Map.get(@map, n)
+
+  def is_happy(n) do
+    n
+    |> to_num_list
+    |> Enum.map(&:math.pow(&1, 2))
+    |> Enum.reduce(&(&1 + &2))
+    |> round()
+    |> is_happy()
+  end
+
+  def to_num_list(n),
+    do: n |> to_string() |> String.split("", trim: true) |> Enum.map(&String.to_integer(&1))
+end
+
+Solution.is_happy(4)
+```
