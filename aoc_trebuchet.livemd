@@ -1,0 +1,68 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Advent do
+  @nums [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ]
+  @nums_str [
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine"
+  ]
+  def trebuchete(str) do
+    str
+    |> mult_str_to_list
+    |> get_sums
+  end
+
+  def get_sums([]), do: 0
+
+  def get_sums([h | t]), do: get_number(h |> to_list()) + get_sums(t)
+
+  def mult_str_to_list(str), do: str |> String.split("\n", trim: true)
+  def to_list(str), do: str |> String.split("", trim: true)
+
+  def get_number(list) do
+    list = list |> Enum.filter(&Enum.member?(@nums, &1))
+    rev_list = list |> Enum.reverse()
+    first = list |> Enum.at(0)
+    last = rev_list |> Enum.at(0)
+    num_str = "#{first}#{last}"
+
+    case num_str do
+      "" ->
+        0
+
+      _ ->
+        String.to_integer(num_str)
+    end
+  end
+end
+
+"""
+"""
+|> Advent.trebuchete()
+
+"2ddonetwo4four"
+|> String.split("", trim: true)
+# |> String.
+|> Enum.chunk_every(2)
+```
