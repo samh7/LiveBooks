@@ -1,0 +1,59 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Advent do
+  @nums_str %{
+    "one" => "1",
+    "two" => "2",
+    "three" => "3",
+    "four" => "4",
+    "five" => "5",
+    "six" => "6",
+    "seven" => "7",
+    "eight" => "8",
+    "nine" => "9"
+  }
+  @nums [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ]
+  def trebuchete(str) do
+  end
+
+  def treverse([], _)
+
+  def treverse([h | tail], curr_str, curr_idx, idx, curr_list) do
+    h = curr_str <> h
+    curr_idx = curr_idx + 1
+
+    if length(h) == 5 do
+      treverse(curr_list |> tl(), "", idx + 1, idx + 1, [])
+    else
+      case Enum.member?(@nums_str, h) do
+        true ->
+          [curr_list ++ Map.get(@nums_str, h) | treverse(tail, "", curr_idx, curr_idx, [])]
+
+        false ->
+          treverse(tail, h, curr_idx, idx, curr_list)
+      end
+    end
+  end
+end
+
+str =
+  """
+  self()
+  defdelegate 
+  """
+
+"onetwodas" |> String.split("", trim: true) |> Advent.trebuchete()
+```
