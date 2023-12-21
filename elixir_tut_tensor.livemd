@@ -1,0 +1,169 @@
+<!-- livebook:{"app_settings":{"output_type":"rich","slug":"eee","zero_downtime":true}} -->
+
+# Untitled notebook
+
+## Section
+
+```elixir
+test = fn
+  x when is_number(x) and x < 0 ->
+    :negative
+
+  0 ->
+    :zero
+
+  x when is_number(x) and x > 0 ->
+    :positive
+end
+
+test.(-1)
+```
+
+```elixir
+defmodule PlaygroundWhen do
+  def extract_user(user) do
+    with {:ok, login} <- extract_login(user),
+         {:ok, email} <- extract_email(user),
+         {:ok, password} <- extract_password(user) do
+      IO.puts("user #{login} of email #{email} has a password of #{password}")
+    end
+  end
+
+  def extract_login(%{:login => login}), do: {:ok, login}
+  def extract_login(_), do: {:error, nil}
+  def extract_email(%{:email => email}), do: {:ok, email}
+  def extract_email(_), do: {:error, nil}
+  def extract_password(%{:password => password}), do: {:ok, password}
+  def extract_password(_), do: {:error, nil}
+end
+
+user = %{login: "crazy_cow", email: "ccawrazy@email.com", password: "cowcowcow"}
+# Playground.extract_user(user)
+```
+
+```elixir
+# equivalent to one for loop
+for x <- 1000..10000, rem(x, 2) == 0 do
+  IO.puts(x)
+end
+```
+
+```elixir
+# equivalent to two for loops, each val of x is run 0..10 times
+for x <- 1000..10000, y <- 0..10 do
+  IO.puts("x => #{x}, y => #{y}")
+end
+```
+
+```elixir
+# equivalent to two for loops, each val of x is run 0..10 times
+hello =
+  for x <- 1000..10000, y <- 0..10, into: %{} do
+    # IO.puts("x => #{x}, y => #{y}")
+    # IO.puts(x)
+    {{x, y}, nil}
+  end
+
+# Enum.each(x, fn {x,y} -> IO.puts(y) end)
+```
+
+```elixir
+defmodule TaskList do
+  defstruct date: DateTime.to_date(DateTime.utc_now()),
+            task_list: []
+
+  @type t :: %TaskList{date: Date.t(), task_list: [String.t()]}
+  @type t(date, task_list) :: %TaskList{date: date, task_list: task_list}
+  def new(), do: MultiStorage.new()
+
+  def add_task(task_list, date, body) do
+    MultiStorage.add(task_list, date, body)
+  end
+
+  def get_task(task_list, date) do
+    MultiStorage.get(task_list, date)
+  end
+
+  def get_all_tasks(storage) do
+    Enum.map(storage, fn %TaskList{date: date, task_list: task_list} ->
+      {date, task_list}
+    end)
+  end
+end
+
+defmodule MultiStorage do
+  def new(), do: [%TaskList{}]
+
+  def add(storage, date, body) do
+    idx_in_list =
+      Enum.find_index(storage, fn %{date: date_, task_list: _} ->
+        date == date_
+      end)
+
+    case idx_in_list == nil do
+      true ->
+        [%TaskList{date: date, task_list: [body]} | storage]
+
+      false ->
+        {:ok, store_item} = Enum.fetch(storage, idx_in_list)
+        new_storage = List.delete_at(storage, idx_in_list)
+        [%TaskList{date: date, task_list: [body | store_item.task_list]} | new_storage]
+    end
+  end
+
+  def get(storage, date) do
+    idx_in_list =
+      Enum.find_index(storage, fn %{date: date_} ->
+        date == date_
+      end)
+
+    case idx_in_list == nil do
+      true -> nil
+      false -> Enum.fetch(storage, idx_in_list)
+    end
+  end
+end
+
+task_l = TaskList.new()
+
+task_l
+|> TaskList.add_task(~D[2023-12-19], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-19], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-19], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-19], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-29], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-04], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-09], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-09], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-01], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-29], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-04], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-05], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-17], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-18], "Go Shopping")
+|> TaskList.add_task(~D[2023-12-10], "Go Shopping")
+|> TaskList.get_all_tasks()
+```
+
+```elixir
+# task_list =
+#   TaskList.new()
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk")
+#   |> TaskList.add_task(~D[2023-12-21], "Buy Bread")
+#   |> TaskList.add_task(~D[2025-12-23], "Go to Market")
+#   |> TaskList.add_task(~D[2026-12-24], "Visit Relative")
+#   |> TaskList.add_task(~D[2027-12-27], "Help a Friend in Need")
+#   |> TaskList.add_task(~D[2028-12-29], "Buy Groceries")
+#   |> TaskList.add_task(~D[2029-12-31], "This is What You Came For")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk2")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk3")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk4")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk5")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk6")
+#   |> TaskList.add_task(~D[2023-12-19], "Get Milk7")
+```
+
+```elixir
+task_list = %TaskList{}
+%TaskList{date: date} = task_list
+```
