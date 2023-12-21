@@ -1,0 +1,19 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+# Streams, async enums
+lazily_filtered_list =
+  list =
+  ([12_22, 2, 2, 2, 2 | Range.to_list(0..11)] ++ Range.to_list(10..2))
+  |> Stream.filter(&(rem(&1, 2) == 0))
+
+lazily_filtered_list |> Enum.to_list() |> IO.inspect()
+lazily_filtered_list |> Enum.map(&(&1 * 2)) |> IO.inspect()
+Process.sleep()
+```
+
+```elixir
+
+```
