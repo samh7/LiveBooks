@@ -1,0 +1,58 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Post do
+  defstruct name: "s",
+            id: nil,
+            title: "",
+            description: "",
+            author: ""
+end
+```
+
+```elixir
+post1 = %Post{id: 1, title: "post1", description: "post 1", author: "Soila"}
+```
+
+```elixir
+case post1 do
+  %{author: "Soila"} -> "Got a post from Soila"
+  _ -> "Got a post from Jules"
+end
+```
+
+```elixir
+list = [1, 1, 2, 21, 2313, 21]
+
+cond do
+  hd(list) == 1 -> "Got a one"
+  true -> ""
+end
+```
+
+```elixir
+defmodule Sum do
+  def sum_digits(0) do
+    spawn()
+  end
+
+  def sum_digits(num) do
+    pid = spawn(fn -> sum_digits(num - 1) end)
+
+    receive do
+      {^pid, value} -> num + value
+      _ -> num
+    end
+  end
+end
+
+Sum.sum_digits(1)
+```
+
+```elixir
+x = 0
+y = 10
+Enum.each(x..y, fn x -> IO.puts(x) end)
+```
