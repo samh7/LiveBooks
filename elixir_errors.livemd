@@ -1,0 +1,87 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+raise "Error Error!"
+```
+
+```elixir
+raise RuntimeError, message: "An error has occurred😒"
+```
+
+```elixir
+try do
+  raise "Oh no!"
+rescue
+  e in RuntimeError ->
+    "#{inspect(e)} error raised" |> IO.puts()
+
+  _ in MatchError ->
+    "Match Error" |> IO.puts()
+
+  ArgumentError ->
+    "Argument Error" |> IO.puts()
+after
+  IO.puts("This will always run")
+end
+
+# It is adviced to use raise, rescues rather than "throw, catch"
+# 1. => The difference between the two is that "throw, catch" is used for control flow, 
+# i.e it will stop execution of the function and return a value
+# 2. => While "raise, rescue" is used for error handling to signal an error
+
+try do
+  divident = 10
+  divisor = 0
+  if divisor == 0, do: throw(:invalid_operation)
+catch
+  value -> value
+end
+```
+
+```elixir
+defmodule ExampleError do
+  defexception message: "This is an ExampleError"
+end
+
+try do
+  raise ExampleError
+rescue
+  e in ExampleError ->
+    e
+end
+```
+
+```elixir
+# Exiting
+exit("Oh no")
+```
+
+```elixir
+try do
+  exit("I am exiting")
+catch
+  :exit, reason ->
+    reason
+end
+```
+
+```elixir
+# # does not run
+# try do
+#   spawn_link(fn -> exit("Exit") end)
+# catch
+#   :exit, reason ->
+#     reason
+# end
+```
+
+```elixir
+nil
+```
+
+```elixir
+kw = [hello: "hello"]
+kw[:hello]
+```
