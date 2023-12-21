@@ -1,0 +1,288 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule ModuleTut do
+  # use @derive allows us to implement protocols
+  # alias => for a single function
+  # import => import all functions and macros in a module, allows both macros and functions
+  # required => imports all macros, excepst functions in a macro
+  # use => allows other macros to modify our content in our module
+  import List, only: [last: 1]
+  import String, except: [to_integer: 1]
+  import Integer, only: :functions
+  import Agent, only: :macros
+  @derive {Inspect, only: [:name], except: [:use]}
+  defstruct name: "", use: ""
+  @type t :: %ModuleTut{name: String.t(), use: String.t()}
+  @type t(name, use_) :: %ModuleTut{name: name, use: use_}
+end
+
+# Example of `use` macro in action
+defmodule Hello do
+  # with use macro we can enable other module to modify code in our module
+  # When we call use we are actually invoking __using__/1 callback defined by the provide module.
+  # __using__/1 macro becomes a part of our module defination
+  # eg:
+  defmacro __using__(opts) do
+    greeting = Keyword.get(opts, :greeting, "Hi")
+
+    quote do
+      def hello(name), do: unquote(greeting) <> ~s(,) <> "#{name}"
+    end
+  end
+end
+
+defmodule HelloExample do
+  # default is use Hello, and will use the "Hi" greeting
+  use Hello, greeting: "Hello"
+end
+
+HelloExample.hello("Jason")
+```
+
+```elixir
+# Sigils
+# the cap letter symbol usually doesnt have escaping or interpolation
+# while the small letter symbol usually does
+# unable to prove, but thats what the docs say
+~S(Hello world)
+~s(Hello world)
+# delimiters
+# <...>, {...}, [...], (...), |...|, /.../, "...", '...'
+# creating sigisls
+defmodule MySigil do
+  def sigil_p(string, [] = _modifiers) do
+    String.upcase(string)
+  end
+
+  # in multiline sigils all chars must be uppcase
+  def sigil_LMAO(string, []) do
+    "LMAO"
+  end
+end
+```
+
+```elixir
+import MySigil
+~p/hello, world/
+```
+
+```elixir
+~LMAO/hello, world/
+```
+
+```elixir
+String.graphemes("hello")
+```
+
+```elixir
+defmodule Phoenix do
+  defmacro __using__(opts) do
+    greeting = Keyword.get(opts, :greeting, "Hi")
+
+    quote do
+      def greet(name) do
+        IO.puts(~s(#{unquote(greeting)} #{name}))
+      end
+    end
+  end
+end
+```
+
+```elixir
+defmodule PhoenixApp1 do
+  @derive {Inspect, only: [:name]}
+  defstruct name: "", version: "0.0.0"
+  @type t :: %PhoenixApp1{name: String.t(), version: String.t()}
+  @type t(name, version) :: %PhoenixApp1{name: name, version: version}
+  use Phoenix
+
+  def new() do
+    %PhoenixApp1{}
+  end
+end
+
+defmodule PhoenixApp2 do
+  @derive {Inspect, only: [:app_1]}
+  defstruct app_1: %PhoenixApp1{}, type: ""
+  @type t :: %PhoenixApp2{app_1: PhoenixApp1.t(), type: String.t()}
+  @type t(app_1, type) :: %PhoenixApp2{app_1: app_1, type: type}
+  use Phoenix, greeting: :"Hello from the other side"
+
+  def new() do
+    %PhoenixApp2{}
+  end
+end
+
+defmodule PhoenixApp3 do
+  use Phoenix, greeting: "Hello from the other side"
+end
+
+defmodule PhoenixApp4 do
+  use Phoenix, greeting: "Hello from the other side"
+end
+
+PhoenixApp1.greet(~s(Samson))
+PhoenixApp2.greet(~s(Adele))
+PhoenixApp3.greet(~s(Adele))
+PhoenixApp4.greet(~s(Adele))
+PhoenixApp1.new() |> IO.inspect()
+PhoenixApp2.new() |> IO.inspect()
+```
+
+```elixir
+defmodule User do
+  @derive {Inspect, only: [:login, :email]}
+  defstruct login: "", email: "", password: ""
+  @type t :: %User{login: String.t(), email: String.t(), password: String.t()}
+  @type t(login, email, password) :: %User{login: login, email: email, password: password}
+  def new(), do: %User{}
+
+  def new(login, email, password) do
+    login = verify_login(login)
+    email = verify_email(email)
+    password = verify_password(password)
+
+    case login == nil do
+      true ->
+        {:error, "Must have a login name"}
+
+      false ->
+        case email == nil do
+          true ->
+            {:error, "Invalid email format"}
+
+          false ->
+            case password == nil do
+              true -> {:error, "Password must be 4 or more character"}
+              false -> %User{login: login, email: email, password: password}
+            end
+        end
+    end
+  end
+
+  def extract_user_details(user) do
+    with login <- extract_login(user),
+         email <- extract_email(user),
+         password <- extract_password(user) do
+      [
+        {:login, login},
+        {:email, email},
+        {:password,
+         String.split(password, "", trim: true)
+         |> Enum.map(&(&1 = "*"))
+         |> List.to_string()}
+      ]
+    end
+  end
+
+  defp extract_password(user), do: user.password
+  defp extract_password(_), do: {:error, "Inavlid argument"}
+  defp extract_login(user), do: user.login
+  defp extract_login(_), do: {:error, "Inavlid argument"}
+  defp extract_email(user), do: user.email
+  defp extract_email(_), do: {:error, "Inavlid argument"}
+
+  defp verify_login(login) do
+    case(String.length(login) == 0) do
+      true -> nil
+      false -> login
+    end
+  end
+
+  defp verify_password(password) do
+    case(String.length(password) == 0) do
+      true -> nil
+      false -> password
+    end
+  end
+
+  defp verify_email(email) do
+    email_list = String.split(email, ~r(@))
+    str_left = Enum.fetch!(email_list, 0)
+    str_right = Enum.fetch!(email_list, 1)
+    str_right_list_dot = String.split(str_right, ~r(\.))
+    str_right_left = Enum.fetch!(str_right_list_dot, 0)
+    str_right_list = String.split(str_right, "", trim: true)
+
+    email
+    |> email_verify_initial()
+    |> email_verify_len_before_AT(str_left)
+    |> email_verify_len_after_AT(str_right_left)
+    |> email_verify_DOT_COM(str_right_list)
+  end
+
+  defp email_verify_initial(nil), do: nil
+
+  defp email_verify_initial(email) do
+    contains_AT? = String.contains?(email, "@")
+
+    case contains_AT? do
+      true -> email |> email_verify_len()
+      false -> nil
+    end
+  end
+
+  defp email_verify_len(nil), do: nil
+
+  defp email_verify_len(email) do
+    case String.length(email) < 6 do
+      true ->
+        nil
+
+      false ->
+        email
+    end
+  end
+
+  defp email_verify_DOT_COM(nil, _), do: nil
+
+  defp email_verify_DOT_COM(email, str_right_list) do
+    try do
+      ["m" | ["o" | ["c" | ["." | _]]]] = Enum.reverse(str_right_list)
+      email
+    rescue
+      MatchError ->
+        nil
+    end
+  end
+
+  defp email_verify_len_before_AT(nil, _), do: nil
+
+  defp email_verify_len_before_AT(email, str_left) do
+    case String.length(str_left) == 0 do
+      true -> nil
+      false -> email
+    end
+  end
+
+  defp email_verify_len_after_AT(nil, _), do: nil
+
+  defp email_verify_len_after_AT(email, str_right) do
+    case String.length(str_right) == 0 do
+      true -> nil
+      false -> email
+    end
+  end
+end
+
+String.split("hello@email.com", ~r(\.com), trim: true)
+samson = User.new("Samsons", "samsonss@email.com", "abcd")
+User.extract_user_details(samson)
+```
+
+```elixir
+# keyword list
+[{:hello, :hello}, {:hi, :hello}] |> IO.inspect()
+# keyword list
+[{:hello, "hello"}, {:hi, "hello"}] |> IO.inspect()
+# list of tuples
+[{"hello", "hello"}, {:hi, "hello"}] |> IO.inspect()
+```
+
+```elixir
+name = "samson"
+:"hello_#{name}"
+```
