@@ -1,0 +1,161 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Example do
+  def add(a, b) do
+    IO.puts(a + b)
+    a + b
+  end
+end
+
+# 5
+spawn(Example, :add, [3, 2])
+current_process = self()
+# 40
+spawn(fn -> send(current_process, 40) end)
+# we are self()
+receive do
+  40 -> IO.puts("Correct")
+  _ -> IO.puts("Wrong answer.")
+end
+```
+
+```elixir
+defmodule Bomb do
+  def explode, do: exit(:kaboom)
+end
+
+# current process not affected
+pid = spawn(Bomb, :explode, [])
+# does not actually exit because, since its isnt linked to current process,
+# current process continues excecuting 
+Process.alive?(pid)
+```
+
+```elixir
+# spawn_link(Bomb, :explode, []) #links the spawned process to current process,
+# it will cause current process to crash
+# so that it doesnt crash self trap the exit flag
+Process.flag(:trap_exit, true)
+# links the spawned process to current process,
+pid2 = spawn_link(Bomb, :explode, [])
+Process.alive?(pid2)
+```
+
+```elixir
+defmodule Grenade do
+  def explode, do: exit(:kaboom)
+
+  def run do
+    # enable us to get updates ot process without linkin to self
+    spawn_monitor(Grenade, :explode, [])
+
+    receive do
+      {:DOWN, _ref, :process, _from_pid, reason} ->
+        IO.puts("EXit reason: #{reason}")
+    end
+  end
+end
+
+Grenade.run()
+```
+
+```elixir
+# Agents => an abstraction to Processes,
+# They are a way of maintaining state
+{:ok, agent} = Agent.start_link(fn -> 42 end)
+Agent.update(agent, fn state -> 5555 end)
+Agent.get(agent, & &1) |> IO.puts()
+# Agent.start_link, links the process to self()
+```
+
+```elixir
+# Tasks
+# Used to call async functions,
+# code that retrieves its value later
+defmodule Example1 do
+  def double(x) do
+    :timer.sleep(300)
+    x * 2
+  end
+end
+
+task = Task.async(Example1, :double, [2000])
+Task.await(task) |> IO.puts()
+
+# start uses to start a process whose value we dont care about or if the function run for a very long time
+{:ok, task1} =
+  Task.start(fn ->
+    :timer.sleep(2000)
+    IO.puts("eee")
+  end)
+
+# Task.await(task1)
+# Process.
+```
+
+```elixir
+# GenServer
+# handle call is synchronous
+# handle cast is asynchronous
+# handle info used to handle data send to GenServer via send()
+defmodule SimpleQueue do
+  use GenServer
+
+  @doc """
+  GenServer.init/1 callback
+  """
+  def init(state), do: {:ok, state}
+
+  @doc """
+  GenServer.handle_call/3 callback
+  """
+  def handle_call(:dequeue, _from, [value | state]) do
+    {:reply, value, state}
+  end
+
+  def handle_call(:dequeue, _from, []), do: {:reply, nil, []}
+
+  def handle_call(:queue, _from, state), do: {:reply, state, state}
+
+  @doc """
+  GenServer.handle_cast/2 callback
+  """
+  def handle_cast({:enqueue, value}, state) do
+    {:noreply, state ++ [value]}
+  end
+
+  ### Client API/ Helper functions
+
+  @doc """
+  Start our queue and link it.
+  This is a helper function
+  """
+  def start_link(state \\ []) do
+    GenServer.start(__MODULE__, state, name: __MODULE__)
+  end
+
+  def enqueue(value), do: GenServer.cast(__MODULE__, {:enqueue, value})
+  def queue, do: GenServer.call(__MODULE__, :queue)
+  def dequeue, do: GenServer.call(__MODULE__, :dequeue)
+end
+```
+
+```elixir
+# Process.flag(:trap_exit, false)
+SimpleQueue.start_link([1, 2, 3, 4])
+SimpleQueue.dequeue() |> IO.puts()
+SimpleQueue.dequeue() |> IO.puts()
+SimpleQueue.queue()
+SimpleQueue.enqueue(2)
+SimpleQueue.enqueue(2)
+# use GenServer.stop(SimpleQueue) to stop the server
+
+# SimpleQueue.dequeue() |> IO.puts()
+```
+
+```elixir
+
+```
