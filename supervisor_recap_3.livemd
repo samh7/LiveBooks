@@ -1,0 +1,141 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+# Supervisors recap
+defmodule SimpleQueue do
+  # FIFO
+  use GenServer
+
+  def init(state) do
+    {:ok, state}
+  end
+
+  def handle_cast({:enqueue, val}, state) do
+    {:noreply, [val | state]}
+  end
+
+  def handle_call(:dequeue, senders_pid, state) do
+    [f | t] = state
+    IO.puts("Recieved a dequeue request from #{inspect(senders_pid)}")
+    {:reply, f, t}
+  end
+
+  def handle_call(:queue, senders_pid, state) do
+    IO.puts("Recieved a queue request from #{inspect(senders_pid)}")
+    {:reply, state, state}
+  end
+
+  # api
+  def start_link(state) do
+    GenServer.start_link(__MODULE__, state, name: __MODULE__)
+  end
+
+  def stop do
+    IO.puts(
+      "Stopping server in 3 seconds. To cancel this request run #{__MODULE__}.cancel_request"
+    )
+
+    slf = self()
+
+    pid2 =
+      spawn(fn ->
+        receive do
+          {:ok, :cancel_request} ->
+            IO.puts("Stop request cancelled")
+        after
+          3000 ->
+            Process.unlink(slf)
+            GenServer.stop(__MODULE__, :normal)
+            IO.puts("Server stopped.")
+        end
+      end)
+
+    register_process(pid2, "stop_server")
+  end
+
+  def cancel_request() do
+    spawn(fn -> send(:stop_server, {:ok, :cancel_request}) end)
+  end
+
+  def register_process(pid, name) do
+    try do
+      Process.register(pid, :"#{name}")
+    rescue
+      _ ->
+        nil
+    end
+  end
+
+  def enqueue(val) do
+    GenServer.cast(__MODULE__, {:enqueue, val})
+  end
+
+  def dequeue do
+    GenServer.call(__MODULE__, :dequeue)
+  end
+
+  def queue do
+    GenServer.call(__MODULE__, :queue)
+  end
+end
+```
+
+```elixir
+# SimpleQueue.stop()
+children = [
+  {SimpleQueue, [1, 2, 3, 4, 4, 5, 6, 6, 4]}
+]
+
+Supervisor.start_link(children, strategy: :one_for_one)
+```
+
+```elixir
+SimpleQueue.queue()
+
+defmodule SQ do
+  use GenServer
+
+  def init(state) do
+    {:ok, state}
+  end
+
+  def start_link(state) do
+    GenServer.start_link(__MODULE__, state)
+  end
+
+  def handle_call(:queue, _from, state) do
+    {:reply, state, state}
+  end
+
+  def queue do
+    GenServer.call(__MODULE__, :queue)
+  end
+end
+```
+
+```elixir
+children = [
+  {Task.Supervisor, name: ExampleApp.Supervisor}
+]
+
+{:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
+```
+
+```elixir
+Task.Supervisor.start_child(
+  ExampleApp.Supervisor,
+  fn ->
+    IO.puts("hello, world")
+  end
+)
+```
+
+```elixir
+DynamicSupervisor.start_link(name: SimpleQueue, strategy: :one_for_one)
+```
+
+```elixir
+
+```
