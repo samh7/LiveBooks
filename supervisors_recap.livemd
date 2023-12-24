@@ -1,0 +1,107 @@
+<!-- livebook:{"app_settings":{"multi_session":true,"show_source":true,"slug":"SimpleServer"}} -->
+
+# Untitled notebook
+
+## Section
+
+```elixir
+# Supervisors recap
+defmodule SimpleQueue do
+  # FIFO
+  use GenServer
+
+  def init(state) do
+    {:ok, state}
+  end
+
+  def handle_cast({:enqueue, val}, state) do
+    {:noreply, [val | state]}
+  end
+
+  def handle_call(:dequeue, senders_pid, state) do
+    [f | t] = state
+    IO.puts("Recieved a dequeue request from #{inspect(senders_pid)}")
+    {:reply, f, t}
+  end
+
+  def handle_call(:queue, senders_pid, state) do
+    IO.puts("Recieved a queue request from #{inspect(senders_pid)}")
+    {:reply, state, state}
+  end
+
+  # api
+  def start(state) do
+    pid = GenServer.start(__MODULE__, state, name: __MODULE__)
+    # Process.register(pid, :s_q_s)
+    # :s_q_s
+  end
+
+  # def start(state, name) do
+  #   pid = GenServer.start(__MODULE__, state, name: __MODULE__)
+  #   Process.register(pid, :"#{name}")
+  #   :"#{name}"
+  # end
+
+  def stop do
+    IO.puts(
+      "Stopping server in 3 seconds. To cancel this request run #{__MODULE__}.cancel_request"
+    )
+
+    pid2 =
+      spawn(fn ->
+        receive do
+          {:ok, :stop_server} ->
+            IO.puts("Stop request cancelled")
+        after
+          3000 ->
+            GenServer.stop(__MODULE__, :normal)
+            IO.puts("Server stopped.")
+        end
+      end)
+
+    register_process(pid2, "stop_server")
+  end
+
+  def cancel_request() do
+    spawn(fn -> send(:stop_server, {:ok, :cancel_request}) end)
+  end
+
+  def register_process(pid, name) do
+    try do
+      Process.register(pid, :"#{name}")
+    rescue
+      _ ->
+        nil
+    end
+  end
+
+  def enqueue(val) do
+    GenServer.cast(__MODULE__, {:enqueue, val})
+  end
+
+  def dequeue do
+    GenServer.call(__MODULE__, :dequeue)
+  end
+
+  def queue do
+    GenServer.call(__MODULE__, :queue)
+  end
+end
+```
+
+```elixir
+q = SimpleQueue.start([9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1])
+```
+
+```elixir
+# SimpleQueue.stop()
+```
+
+```elixir
+# SimpleQueue.dequeue()/
+# SimpleQueue.cancel_request()
+```
+
+```elixir
+SimpleQueue.queue()
+```
