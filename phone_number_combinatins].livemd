@@ -1,0 +1,64 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution1 do
+  @map %{
+    ?2 => ["a", "b", "c"],
+    ?3 => ["d", "e", "f"],
+    ?4 => ["g", "h", "i"],
+    ?5 => ["j", "k", "l"],
+    ?6 => ["m", "n", "o"],
+    ?7 => ["p", "q", "r", "s"],
+    ?8 => ["t", "u", "v"],
+    ?9 => ["w", "x", "y", "z"]
+  }
+  @spec letter_combinations(digits :: String.t()) :: [String.t()]
+  def letter_combinations(""), do: []
+
+  def letter_combinations(digits) do
+    digits
+    |> String.to_charlist()
+    |> Stream.map(&@map[&1])
+    # |>
+    # [["w", "x", "y", "z"],["w", "x", "y", "z"]]
+    |> Enum.reduce(&evaluate(&2, &1))
+  end
+
+  defp evaluate(a, b), do: for(x <- a, y <- b, do: x <> y)
+end
+
+Solution1.letter_combinations("2")
+```
+
+```elixir
+defmodule Solution do
+  @spec letter_combinations(digits :: String.t()) :: [String.t()]
+  @map %{
+    "2" => ["a", "b", "c"],
+    "3" => ["d", "e", "f"],
+    "4" => ["g", "h", "i"],
+    "5" => ["j", "k", "l"],
+    "6" => ["m", "n", "o"],
+    "7" => ["p", "q", "r", "s"],
+    "8" => ["t", "u", "v"],
+    "9" => ["w", "x", "y", "z"]
+  }
+
+  def letter_combinations(digits) do
+    digits
+    |> String.split("", trim: true)
+    |> Enum.map(fn x ->
+      @map[x]
+    end)
+    |> evaluate
+  end
+
+  defp evaluate([]), do: []
+  defp evaluate([a]), do: a
+  defp evaluate([a, b]), do: for(x <- a, y <- b, do: x <> y)
+  defp evaluate([a, b, c]), do: for(x <- a, y <- b, z <- c, do: x <> y <> z)
+  defp evaluate([a, b, c, d]), do: for(x <- a, y <- b, z <- c, q <- d, do: x <> y <> z <> q)
+end
+```
