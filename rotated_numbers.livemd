@@ -1,0 +1,36 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @spec rotated_digits(n :: integer) :: integer
+  def rotated_digits(n) do
+    rotated = %{
+      "0" => "0",
+      "1" => "1",
+      "8" => "8"
+    }
+
+    1..n
+    |> Enum.map(&(&1 |> to_string() |> String.split("", trim: true)))
+    |> Enum.reject(fn x ->
+      x
+      |> Enum.any?(fn y ->
+        y == "3" or y == "4" or y == "7"
+      end)
+    end)
+    |> Enum.reject(fn x ->
+      x
+      |> Enum.all?(fn y ->
+        rotated[y]
+      end)
+    end)
+    |> length()
+  end
+end
+```
+
+```elixir
+
+```
