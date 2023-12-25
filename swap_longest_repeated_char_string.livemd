@@ -1,0 +1,47 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Solution do
+  @spec max_rep_opt1(text :: String.t()) :: integer
+  def max_rep_opt1(text) do
+    letters = text |> String.graphemes()
+
+    groups =
+      letters
+      |> Enum.chunk_by(& &1)
+      |> Enum.map(&{hd(&1), Enum.count(&1)})
+
+    counts = letters |> Enum.frequencies()
+
+    max_1 =
+      groups
+      |> Enum.map(fn {k, v} ->
+        min(v + 1, Map.get(counts, k))
+      end)
+      |> Enum.max()
+
+    max(
+      max_1,
+      groups
+      |> Enum.chunk_every(3, 1, :discard)
+      |> Enum.reduce(
+        0,
+        fn [{k1, v1}, {_k2, v2}, {k3, v3}], acc ->
+          max(
+            acc,
+            if(k1 == k3 and v2 == 1, do: min(v1 + v2 + v3, Map.get(counts, k1)), else: acc)
+          )
+        end
+      )
+    )
+  end
+end
+
+Solution.max_rep_opt1("abbbbaab")
+```
+
+```elixir
+
+```
