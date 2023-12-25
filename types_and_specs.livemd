@@ -1,0 +1,117 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Examples do
+  defstruct first: "", last: ""
+
+  @typedoc """
+   Type that represents Examples struct with :first as integer and :last as integer.
+  """
+  @type t(first, last) :: %Examples{first: first, last: last}
+  @type t :: %Examples{first: integer, last: integer}
+end
+
+# @type – simple, public type. Internal structure of type is public.
+# @typep – type is private and could be used only in the module where is defined.
+# @opaque – type is public, but internal structure is private.
+```
+
+```elixir
+defmodule Example do
+  @spec sum_product(integer) :: integer
+  def sum_product(a) do
+    [1, 2, 3]
+    |> Enum.map(fn el -> el * a end)
+    |> Enum.sum()
+  end
+end
+
+Example.sum_product(2)
+```
+
+```elixir
+# Behaviours
+# Its Uses
+# Defining a set of functions that must be implemented
+# Checking whether that set was actually implemented
+defmodule Example.Worker do
+  @callback init(state :: term) :: {:ok, new_state :: term} | {:error, reason :: term}
+  @callback perform(args :: term, state :: term) ::
+              {:ok, result :: term, new_state :: term}
+              | {:error, reason :: term, new_state :: term}
+end
+```
+
+```elixir
+defmodule Example.Compressor do
+  @behaviour Example.Worker
+
+  def init(opts), do: {:ok, opts}
+
+  def perform(payload, opts) do
+    payload
+    |> compress
+    |> respond(opts)
+  end
+
+  defp compress({name, files}), do: :zip.create(name, files)
+
+  defp respond({:ok, path}, opts), do: {:ok, path, opts}
+  defp respond({:error, reason}, opts), do: {:error, reason, opts}
+end
+```
+
+```elixir
+# Protocols
+#  Protocols are a means of achieving polymorphism in Elixir. One pain of Erlang is extending an existing API for newly defined types.
+# Eg. String.Chars Protocol is responsile for the to_string function
+defimpl String.Chars, for: Tuple do
+  def to_string(tuple) do
+    interior =
+      tuple
+      |> Tuple.to_list()
+      |> Enum.map(&Kernel.to_string/1)
+      |> Enum.join(", ")
+
+    "{#{interior}}"
+  end
+end
+
+String.Chars.to_string({:hello, :hello}) |> IO.puts()
+to_string({:hello, :hello})
+```
+
+```elixir
+defprotocol AsAtom do
+  def to_atom(data)
+end
+
+defimpl AsAtom, for: Atom do
+  def to_atom(atom), do: atom
+end
+
+defimpl AsAtom, for: BitString do
+  defdelegate to_atom(string), to: String
+end
+
+defimpl AsAtom, for: List do
+  defdelegate to_atom(list), to: List
+end
+
+defimpl AsAtom, for: Map do
+  def to_atom(map), do: List.first(Map.keys(map))
+end
+```
+
+```elixir
+defmodule MyList do
+  defdelegate reverse(list), to: Enum
+  defdelegate other_reverse(list), to: Enum, as: :reverse
+end
+```
+
+```elixir
+# to_atom([1,2,22,])
+```
