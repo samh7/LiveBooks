@@ -1,0 +1,54 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+# Behaviours and Protocols
+defprotocol Printable do
+  def to_csv(data)
+end
+
+# The defprotocol macro opens the definition of a protocol; inside, we define one or more 
+# functions with its own arguments. 
+# It is a sort of interface contract: we can say that every data type that is printable will have an 
+# implementation for the to_csv function. 
+
+defimpl Printable, for: Map do
+  def to_csv(map) do
+    Map.keys(map)
+    |> Enum.map(fn k -> map[k] end)
+    |> Enum.join(",")
+  end
+end
+
+defimpl Printable, for: Integer do
+  def to_csv(i) do
+    to_string(i)
+  end
+end
+
+Printable.to_csv(%{"a" => "b"})
+```
+
+```elixir
+# Behaviours
+defmodule TalkingAnimal do
+  @callback say(what :: String.t()) :: {:ok}
+end
+
+defmodule Cat do
+  @behaviour TalkingAnimal
+  def say(str) do
+    "miaoo"
+  end
+end
+
+Cat.say("")
+# Code.eva
+```
+
+```elixir
+# ~r regexp w/interpolation
+~W/words   interpolation/
+~w/words   interpolation/
+```
